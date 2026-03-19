@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medical Prescreening System — Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface-2: #1a2332;
+    --surface-3: #1e293b;
+    --border: #2a3a4e;
+    --border-light: #374357;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --text-muted: #64748b;
+    --accent-blue: #3b82f6;
+    --accent-blue-dim: #1e40af;
+    --accent-cyan: #06b6d4;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --accent-red: #ef4444;
+    --accent-purple: #8b5cf6;
+    --accent-pink: #ec4899;
+    --accent-teal: #14b8a6;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 30px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+    position: relative;
+  }
+
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+  }
+
+  .header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+
+  .header p {
+    color: var(--text-dim);
+    font-size: 15px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Version Tabs */
+  .version-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 50px;
+  }
+
+  .version-tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 10px 28px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .version-tab:hover {
+    border-color: var(--accent-blue);
+    color: var(--text);
+  }
+
+  .version-tab.active {
+    background: var(--accent-blue-dim);
+    border-color: var(--accent-blue);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  }
+
+  /* Architecture Container */
+  .arch-container {
+    display: none;
+  }
+
+  .arch-container.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Version Badge */
+  .version-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+  }
+
+  .v1-badge {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-green);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+
+  .v2-badge {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--accent-purple);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+  }
+
+  /* Section Title */
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  /* Architecture SVG Area */
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arch-diagram::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+  }
+
+  /* Flow Rows */
+  .flow-section {
+    margin-bottom: 36px;
+    position: relative;
+  }
+
+  .flow-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .flow-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+
+  /* Component Boxes */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+  }
+
+  .component {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    min-width: 180px;
+    position: relative;
+    transition: all 0.2s ease;
+  }
+
+  .component:hover {
+    border-color: var(--border-light);
+    transform: translateY(-1px);
+  }
+
+  .component-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .component-detail {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .component-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin-top: 8px;
+  }
+
+  /* Component Colors */
+  .comp-input { border-left: 3px solid var(--accent-cyan); }
+  .comp-asr { border-left: 3px solid var(--accent-blue); }
+  .comp-llm { border-left: 3px solid var(--accent-purple); }
+  .comp-rag { border-left: 3px solid var(--accent-orange); }
+  .comp-ui { border-left: 3px solid var(--accent-green); }
+  .comp-output { border-left: 3px solid var(--accent-teal); }
+  .comp-feedback { border-left: 3px solid var(--accent-pink); }
+  .comp-store { border-left: 3px solid var(--accent-red); }
+  .comp-multimodal { border-left: 3px solid var(--accent-orange); }
+  .comp-ehr { border-left: 3px solid var(--accent-teal); }
+
+  .tag-realtime { background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); }
+  .tag-streaming { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); }
+  .tag-batch { background: rgba(245, 158, 11, 0.15); color: var(--accent-orange); }
+  .tag-persistent { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+  .tag-periodic { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+  .tag-manual { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+
+  /* Arrows */
+  .arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    color: var(--text-muted);
+    font-size: 18px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .arrow-line {
+    width: 40px;
+    height: 1px;
+    background: var(--border-light);
+    position: relative;
+  }
+
+  .arrow-line::after {
+    content: '▶';
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    font-size: 10px;
+    color: var(--border-light);
+  }
+
+  .arrow-down {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    color: var(--text-muted);
+  }
+
+  .arrow-down-line {
+    width: 1px;
+    height: 30px;
+    background: var(--border-light);
+    position: relative;
+    margin: 0 auto;
+  }
+
+  .arrow-down-line::after {
+    content: '▼';
+    position: absolute;
+    bottom: -12px;
+    left: -5px;
+    font-size: 10px;
+    color: var(--border-light);
+  }
+
+  /* Parallel Container */
+  .parallel-container {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .parallel-path {
+    flex: 1;
+    background: var(--surface-3);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+  }
+
+  .parallel-path-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 3px;
+    position: absolute;
+    top: -10px;
+    left: 16px;
+  }
+
+  .path-primary .parallel-path-label {
+    background: var(--surface);
+    color: var(--accent-blue);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+  }
+
+  .path-supplementary .parallel-path-label {
+    background: var(--surface);
+    color: var(--accent-orange);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+  }
+
+  .path-feedback .parallel-path-label {
+    background: var(--surface);
+    color: var(--accent-pink);
+    border: 1px solid rgba(236, 72, 153, 0.3);
+  }
+
+  /* Inner flow for parallel paths */
+  .inner-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+  }
+
+  .inner-component {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 16px;
+  }
+
+  .inner-component-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+
+  .inner-component-detail {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .inner-arrow {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 14px;
+    padding: 2px 0;
+  }
+
+  /* Merge indicator */
+  .merge-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .merge-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+  }
+
+  .merge-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* Data Stores Row */
+  .stores-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .store-box {
+    flex: 1;
+    min-width: 150px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border-top: 2px solid var(--accent-red);
+  }
+
+  .store-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .store-detail {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  /* Cross-cutting concerns */
+  .crosscut {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+
+  .crosscut-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    width: 100%;
+    margin-bottom: 4px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .crosscut-item {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .crosscut-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    flex-shrink: 0;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .legend-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    width: 100%;
+    margin-bottom: 6px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .legend-color {
+    width: 14px;
+    height: 3px;
+    border-radius: 2px;
+  }
+
+  /* Notes Section */
+  .notes-section {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .note-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+
+  .note-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .note-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+  }
+
+  .note-content {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .note-content li {
+    margin-bottom: 4px;
+    list-style: none;
+    padding-left: 12px;
+    position: relative;
+  }
+
+  .note-content li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--text-muted);
+  }
+
+  /* V2 Diff Highlights */
+  .v2-new {
+    position: relative;
+  }
+
+  .v2-new::after {
+    content: 'NEW';
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--accent-purple);
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    padding: 1px 5px;
+    border-radius: 3px;
+    position: absolute;
+    top: 6px;
+    right: 8px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .parallel-container { flex-direction: column; }
+    .notes-section { grid-template-columns: 1fr; }
+    .flow-row { flex-wrap: wrap; justify-content: center; }
+    .stores-row { flex-direction: column; }
+  }
+
+  /* Connector lines for feedback loop */
+  .feedback-loop-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(236, 72, 153, 0.08);
+    border: 1px dashed rgba(236, 72, 153, 0.25);
+    border-radius: 6px;
+    margin-top: 12px;
+  }
+
+  .feedback-loop-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-pink);
+    letter-spacing: 0.5px;
+  }
+
+  .loop-arrow {
+    color: var(--accent-pink);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Medical Prescreening System</h1>
+    <p>System Architecture — AI-Guided Nurse-Patient Prescreening</p>
+  </div>
+
+  <div class="version-tabs">
+    <button class="version-tab active" onclick="showVersion('v1')">V1 — Pilot</button>
+    <button class="version-tab" onclick="showVersion('v2')">V2 — Full System</button>
+  </div>
+
+  <!-- ==================== V1 ARCHITECTURE ==================== -->
+  <div id="v1" class="arch-container active">
+    <span class="version-badge v1-badge">V1 — Pilot Release</span>
+    <p class="section-title">Near Real-Time Completeness Monitoring + UI-Based Doctor Feedback</p>
+
+    <div class="arch-diagram">
+
+      <!-- INPUT LAYER -->
+      <div class="flow-section">
+        <div class="flow-label">① Input Layer</div>
+        <div class="flow-row">
+          <div class="component comp-input">
+            <div class="component-name">Audio Capture</div>
+            <div class="component-detail">Consultation room mic /<br>Telehealth audio stream</div>
+            <span class="component-tag tag-streaming">Streaming</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ehr">
+            <div class="component-name">EHR Integration</div>
+            <div class="component-detail">Patient history, medications,<br>allergies, labs via FHIR R4 API</div>
+            <span class="component-tag tag-realtime">Session Start</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-input">
+            <div class="component-name">Consent Capture</div>
+            <div class="component-detail">Patient recording consent<br>+ data processing agreement</div>
+            <span class="component-tag tag-manual">Manual</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROCESSING LAYER -->
+      <div class="flow-section">
+        <div class="flow-label">② Speech Processing</div>
+        <div class="flow-row">
+          <div class="component comp-asr">
+            <div class="component-name">ASR Engine</div>
+            <div class="component-detail">Streaming transcription<br>Medical vocabulary model<br>2-speaker diarization (nurse + patient)<br>Utterance boundary detection</div>
+            <span class="component-tag tag-streaming">Streaming</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-asr">
+            <div class="component-name">Utterance Buffer</div>
+            <div class="component-detail">Groups by speaker turns<br>not fixed time intervals.<br>Fires on natural pause points.</div>
+            <span class="component-tag tag-realtime">Utterance-Based</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTELLIGENCE LAYER -->
+      <div class="flow-section">
+        <div class="flow-label">③ Intelligence Layer — Thinking Model + System-Controlled RAG</div>
+        
+        <div class="parallel-container">
+          <!-- Primary Reasoning Path -->
+          <div class="parallel-path path-primary" style="flex: 2;">
+            <span class="parallel-path-label">Primary Pipeline — LLM Reasoning</span>
+            <div class="inner-flow">
+              <div class="inner-component comp-llm">
+                <div class="inner-component-name">Session Init — Dynamic Protocol Generation</div>
+                <div class="inner-component-detail">LLM receives patient history + visit reason → generates personalized<br>prescreening protocol. No static checklists — clinically reasoned per patient.</div>
+              </div>
+              <div class="inner-arrow">↓</div>
+              <div class="inner-component comp-llm">
+                <div class="inner-component-name">Pass 1 — Reasoning + Retrieval Decision</div>
+                <div class="inner-component-detail">LLM processes utterance chunk against: running context (sliding window<br>+ extracted facts), patient history, dynamic protocol.<br>Outputs: clinical entities, protocol update, retrieval queries (if needed),<br>preliminary suggestions, flags.</div>
+              </div>
+              <div class="inner-arrow">↓ retrieval queries (if triggered)</div>
+              <div class="inner-component comp-rag">
+                <div class="inner-component-name">System-Controlled RAG Retrieval</div>
+                <div class="inner-component-detail">Orchestrator executes retrieval in parallel (not agentic).<br>Drug KB: metadata filter → vector search<br>Clinical Guidelines KB: semantic search with body system filter<br>Learning KB: matched rules by conditions/medications</div>
+              </div>
+              <div class="inner-arrow">↓ enriched context</div>
+              <div class="inner-component comp-llm">
+                <div class="inner-component-name">Pass 2 — Enriched Reasoning (only when retrieval triggered)</div>
+                <div class="inner-component-detail">LLM reasons with retrieved knowledge + all prior context.<br>Outputs: refined suggestions, clinical flags, contradiction alerts,<br>updated dynamic protocol, new protocol items if emerging concerns.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Context Management -->
+          <div class="parallel-path" style="flex: 1; border-color: var(--border);">
+            <span class="parallel-path-label" style="color: var(--accent-teal); border-color: rgba(20, 184, 166, 0.3);">Context Management</span>
+            <div class="inner-flow">
+              <div class="inner-component">
+                <div class="inner-component-name">Sliding Window</div>
+                <div class="inner-component-detail">Last 2-3 min raw transcript<br>for conversational context</div>
+              </div>
+              <div class="inner-arrow">+</div>
+              <div class="inner-component">
+                <div class="inner-component-name">Extracted Facts List</div>
+                <div class="inner-component-detail">Running clinical notepad —<br>symptoms, meds confirmed,<br>vitals, patient statements</div>
+              </div>
+              <div class="inner-arrow">+</div>
+              <div class="inner-component">
+                <div class="inner-component-name">Protocol State</div>
+                <div class="inner-component-detail">Covered / in-progress /<br>remaining / dynamically added<br>items with coverage status</div>
+              </div>
+              <div class="inner-arrow">+</div>
+              <div class="inner-component">
+                <div class="inner-component-name">Patient History</div>
+                <div class="inner-component-detail">Full EHR data loaded at<br>session start — always<br>available in context</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OUTPUT LAYER -->
+      <div class="flow-section">
+        <div class="flow-label">④ Nurse Interface — Completeness Monitoring Dashboard</div>
+        <div class="flow-row">
+          <div class="component comp-ui" style="min-width: 200px;">
+            <div class="component-name">Live Transcript</div>
+            <div class="component-detail">Color-coded by speaker<br>Clinical entities highlighted<br>Uncertain ASR marked</div>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui" style="min-width: 200px;">
+            <div class="component-name">Dynamic Protocol Tracker</div>
+            <div class="component-detail">Auto-checked items<br>Remaining priorities<br>Dynamically added areas<br>with clinical reasoning</div>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui" style="min-width: 200px;">
+            <div class="component-name">High-Value Interventions</div>
+            <div class="component-detail">Red flags & clinical alerts<br>Critical gaps only<br>Contradiction warnings<br>Near real-time (15-20s delay)</div>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui" style="min-width: 200px;">
+            <div class="component-name">Nurse Correction Input</div>
+            <div class="component-detail">Dismiss suggestions:<br>"Already covered" /<br>"Not relevant" / "Will ask later"</div>
+            <span class="component-tag tag-manual">Feedback Signal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST SESSION -->
+      <div class="flow-section">
+        <div class="flow-label">⑤ Post-Session Processing</div>
+        <div class="flow-row">
+          <div class="component comp-llm">
+            <div class="component-name">Summary Generation</div>
+            <div class="component-detail">Full transcript + history + accumulated<br>knowledge → structured clinical summary.<br>Chief complaint, HPI, med reconciliation,<br>review of systems, flags, gaps.</div>
+            <span class="component-tag tag-batch">Batch</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui">
+            <div class="component-name">Nurse Review Gate</div>
+            <div class="component-detail">Human-in-the-loop validation.<br>Edit, annotate, confirm accuracy.<br>Compliance checkpoint.</div>
+            <span class="component-tag tag-manual">Manual</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-output">
+            <div class="component-name">Physician Delivery</div>
+            <div class="component-detail">Summary → physician queue.<br>AI-assisted label. Drill-down<br>to full transcript available.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEEDBACK LOOP -->
+      <div class="flow-section">
+        <div class="flow-label">⑥ Feedback & Learning Loop</div>
+        <div class="flow-row">
+          <div class="component comp-feedback">
+            <div class="component-name">Doctor Feedback UI</div>
+            <div class="component-detail">Per-section thumbs up/down<br>"What was missing" text field<br>Common gap category dropdown<br>Specialist-specific preferences</div>
+            <span class="component-tag tag-manual">Manual</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-feedback">
+            <div class="component-name">Nurse Correction Signals</div>
+            <div class="component-detail">Dismissed suggestions aggregated<br>across sessions. Patterns surface<br>for protocol improvement.</div>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-feedback">
+            <div class="component-name">Clinical Admin Review</div>
+            <div class="component-detail">Approve / reject / modify<br>learned rules. No rule becomes<br>established without human review.</div>
+            <span class="component-tag tag-manual">Manual Gate</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-store">
+            <div class="component-name">Learning Knowledge Base</div>
+            <div class="component-detail">Confidence: new → emerging →<br>established. Matched by conditions,<br>meds, demographics at next session.</div>
+            <span class="component-tag tag-persistent">Persistent</span>
+          </div>
+        </div>
+        <div class="feedback-loop-indicator">
+          <span class="loop-arrow">↻</span>
+          <span class="feedback-loop-text">Learned rules feed back into Dynamic Protocol Generation at next session start</span>
+        </div>
+      </div>
+
+      <!-- DATA STORES -->
+      <div class="flow-section">
+        <div class="flow-label">⑦ Data Stores</div>
+        <div class="stores-row">
+          <div class="store-box">
+            <div class="store-name">Drug Knowledge Base</div>
+            <div class="store-detail">Per-drug chunks with metadata.<br>Vector store + structured lookup.<br>Drug interactions, side effects,<br>contraindications.</div>
+          </div>
+          <div class="store-box">
+            <div class="store-name">Clinical Guidelines KB</div>
+            <div class="store-detail">Per-scenario chunks tagged by<br>symptoms, conditions, demographics.<br>Vector search with metadata filter.</div>
+          </div>
+          <div class="store-box">
+            <div class="store-name">Learning Knowledge Base</div>
+            <div class="store-detail">Accumulated feedback rules.<br>Confidence-tiered. Quarterly<br>review cycle. No negative learning.</div>
+          </div>
+          <div class="store-box">
+            <div class="store-name">Session Store</div>
+            <div class="store-detail">Audio recordings (encrypted),<br>transcripts, summaries, protocol<br>history, all AI suggestions logged.</div>
+          </div>
+          <div class="store-box">
+            <div class="store-name">Embedding Store</div>
+            <div class="store-detail">Vector database for all<br>knowledge base collections.<br>Metadata-filtered retrieval.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CROSS-CUTTING -->
+      <div class="crosscut">
+        <div class="crosscut-title">Cross-Cutting Concerns</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Encryption at rest + in transit</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Audit trail (all AI actions logged)</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Data residency compliance</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Role-based access control</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Graceful degradation on failures</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Patient consent management</div>
+      </div>
+
+    </div>
+
+    <!-- V1 NOTES -->
+    <div class="notes-section">
+      <div class="note-card">
+        <div class="note-title">
+          <span class="note-icon" style="background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan);">⚡</span>
+          Latency Budget
+        </div>
+        <div class="note-content">
+          <ul>
+            <li>Single pass (no retrieval): ~1-2 seconds</li>
+            <li>Two-pass (with retrieval): ~3-5 seconds</li>
+            <li>Retrieval runs in parallel while LLM completes Pass 1</li>
+            <li>~70-80% of chunks single-pass only</li>
+            <li>Displayed with 15-20s delay for completeness monitoring</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note-card">
+        <div class="note-title">
+          <span class="note-icon" style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green);">✓</span>
+          V1 Design Decisions
+        </div>
+        <div class="note-content">
+          <ul>
+            <li>Completeness monitoring over real-time guidance</li>
+            <li>High-value interventions only (flags, critical gaps)</li>
+            <li>Doctor feedback via UI, not speech capture</li>
+            <li>Utterance-based processing, not time-based</li>
+            <li>Nurse correction feedback on suggestions</li>
+            <li>No multimodal audio analysis yet</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note-card">
+        <div class="note-title">
+          <span class="note-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-orange);">⚙</span>
+          RAG Strategy
+        </div>
+        <div class="note-content">
+          <ul>
+            <li>Drug KB: exact name filter → vector search (hybrid)</li>
+            <li>Guidelines KB: semantic search + metadata filter</li>
+            <li>Learning KB: match by conditions, medications, demographics</li>
+            <li>Retrieval triggered by LLM, executed by system orchestrator</li>
+            <li>Max 2-3 lookups per chunk, bounded by orchestrator</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note-card">
+        <div class="note-title">
+          <span class="note-icon" style="background: rgba(236, 72, 153, 0.15); color: var(--accent-pink);">↻</span>
+          Learning Safeguards
+        </div>
+        <div class="note-content">
+          <ul>
+            <li>Confidence tiers: new → emerging (2x) → established (3x+)</li>
+            <li>Clinical admin approval required for established rules</li>
+            <li>No negative learning (never learns to skip screening)</li>
+            <li>Doctor attribution on feedback</li>
+            <li>Quarterly review cycle with decay</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== V2 ARCHITECTURE ==================== -->
+  <div id="v2" class="arch-container">
+    <span class="version-badge v2-badge">V2 — Full System</span>
+    <p class="section-title">Real-Time Guidance + Multimodal Audio Analysis + Doctor Speech Capture</p>
+
+    <div class="arch-diagram">
+
+      <!-- INPUT LAYER -->
+      <div class="flow-section">
+        <div class="flow-label">① Input Layer</div>
+        <div class="flow-row">
+          <div class="component comp-input">
+            <div class="component-name">Audio Capture</div>
+            <div class="component-detail">Consultation room mic /<br>Telehealth audio stream<br>Dual-path: ASR + Multimodal buffer</div>
+            <span class="component-tag tag-streaming">Streaming</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ehr">
+            <div class="component-name">EHR Integration</div>
+            <div class="component-detail">Patient history, medications,<br>allergies, labs via FHIR R4 API</div>
+            <span class="component-tag tag-realtime">Session Start</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-input">
+            <div class="component-name">Consent Capture</div>
+            <div class="component-detail">Recording + behavioral analysis<br>consent. Enhanced disclosure for<br>multimodal voice analysis.</div>
+            <span class="component-tag tag-manual">Manual</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- DUAL PROCESSING -->
+      <div class="flow-section">
+        <div class="flow-label">② Dual Processing Pipelines</div>
+        
+        <div class="parallel-container">
+          <!-- Primary ASR Path -->
+          <div class="parallel-path path-primary" style="flex: 1;">
+            <span class="parallel-path-label">Primary — ASR Pipeline</span>
+            <div class="inner-flow">
+              <div class="inner-component comp-asr">
+                <div class="inner-component-name">ASR Engine</div>
+                <div class="inner-component-detail">Streaming transcription + medical vocab<br>2-speaker diarization + utterance detection</div>
+              </div>
+              <div class="inner-arrow">↓</div>
+              <div class="inner-component comp-asr">
+                <div class="inner-component-name">Utterance Buffer</div>
+                <div class="inner-component-detail">Speaker-turn grouped chunks<br>fired on natural pause points</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Multimodal Path -->
+          <div class="parallel-path path-supplementary v2-new" style="flex: 1;">
+            <span class="parallel-path-label">Supplementary — Multimodal Analysis</span>
+            <div class="inner-flow">
+              <div class="inner-component comp-multimodal">
+                <div class="inner-component-name">Audio Buffer</div>
+                <div class="inner-component-detail">Accumulates 60-90 second segments<br>with speaker labels from ASR</div>
+              </div>
+              <div class="inner-arrow">↓</div>
+              <div class="inner-component comp-multimodal">
+                <div class="inner-component-name">Multimodal LLM</div>
+                <div class="inner-component-detail">Emotional state detection<br>Hesitation pattern analysis<br>Vocal shift / pain indicators<br>Engagement level tracking<br>Running emotional state summary</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTELLIGENCE LAYER -->
+      <div class="flow-section">
+        <div class="flow-label">③ Intelligence Layer — Thinking Model + System-Controlled RAG + Behavioral Signals</div>
+        
+        <div class="parallel-container">
+          <!-- Primary Reasoning -->
+          <div class="parallel-path path-primary" style="flex: 2;">
+            <span class="parallel-path-label">LLM Reasoning Engine</span>
+            <div class="inner-flow">
+              <div class="inner-component comp-llm">
+                <div class="inner-component-name">Session Init — Dynamic Protocol Generation</div>
+                <div class="inner-component-detail">LLM generates personalized protocol from patient history + visit reason<br>+ matched learned rules from Learning KB</div>
+              </div>
+              <div class="inner-arrow">↓</div>
+              <div class="inner-component comp-llm">
+                <div class="inner-component-name">Pass 1 — Reasoning + Retrieval Decision</div>
+                <div class="inner-component-detail">Processes utterance chunk against: sliding window + extracted facts,<br>patient history, dynamic protocol, behavioral signals from multimodal layer.<br>Outputs: entities, protocol update, retrieval queries, suggestions, flags.</div>
+              </div>
+              <div class="inner-arrow">↓ parallel retrieval</div>
+              <div class="inner-component comp-rag">
+                <div class="inner-component-name">System-Controlled RAG Retrieval</div>
+                <div class="inner-component-detail">Orchestrator fires retrieval in parallel (Drug KB + Guidelines KB + Learning KB).<br>Metadata-filtered → vector search. Max 2-3 lookups per chunk.</div>
+              </div>
+              <div class="inner-arrow">↓</div>
+              <div class="inner-component comp-llm">
+                <div class="inner-component-name">Pass 2 — Enriched Reasoning with Behavioral Context</div>
+                <div class="inner-component-detail">LLM reasons with: retrieved knowledge + behavioral signals.<br>Can factor emotional state into suggestion phrasing.<br>"Patient hesitant on topic X — suggest gentler approach."</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Context Management -->
+          <div class="parallel-path" style="flex: 1; border-color: var(--border);">
+            <span class="parallel-path-label" style="color: var(--accent-teal); border-color: rgba(20, 184, 166, 0.3);">Context Window</span>
+            <div class="inner-flow">
+              <div class="inner-component">
+                <div class="inner-component-name">Sliding Window</div>
+                <div class="inner-component-detail">Last 2-3 min raw transcript</div>
+              </div>
+              <div class="inner-arrow">+</div>
+              <div class="inner-component">
+                <div class="inner-component-name">Extracted Facts</div>
+                <div class="inner-component-detail">Running clinical notepad</div>
+              </div>
+              <div class="inner-arrow">+</div>
+              <div class="inner-component">
+                <div class="inner-component-name">Protocol State</div>
+                <div class="inner-component-detail">Dynamic coverage tracking</div>
+              </div>
+              <div class="inner-arrow">+</div>
+              <div class="inner-component">
+                <div class="inner-component-name">Patient History</div>
+                <div class="inner-component-detail">Full EHR data</div>
+              </div>
+              <div class="inner-arrow">+</div>
+              <div class="inner-component v2-new" style="border-left: 2px solid var(--accent-orange);">
+                <div class="inner-component-name">Behavioral State</div>
+                <div class="inner-component-detail">Latest emotional analysis<br>+ running state summary<br>from multimodal layer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NURSE INTERFACE -->
+      <div class="flow-section">
+        <div class="flow-label">④ Nurse Interface — Real-Time Guidance Dashboard</div>
+        <div class="flow-row">
+          <div class="component comp-ui">
+            <div class="component-name">Live Transcript</div>
+            <div class="component-detail">Diarized, entity-highlighted<br>Uncertain ASR flagged</div>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui">
+            <div class="component-name">Dynamic Protocol</div>
+            <div class="component-detail">Auto-tracked coverage<br>Dynamic item additions<br>Priority reordering</div>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui">
+            <div class="component-name">Proactive Suggestions</div>
+            <div class="component-detail">Contextual next questions<br>Behavioral hints inline<br>Red flags & contradictions</div>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui v2-new">
+            <div class="component-name">Behavioral Indicators</div>
+            <div class="component-detail">Subtle inline hints:<br>"Patient hesitant on topic"<br>"Anxiety elevated here"</div>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui">
+            <div class="component-name">Nurse Corrections</div>
+            <div class="component-detail">Dismiss / override<br>suggestions with reason</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- POST SESSION -->
+      <div class="flow-section">
+        <div class="flow-label">⑤ Post-Session Processing</div>
+        <div class="flow-row">
+          <div class="component comp-llm">
+            <div class="component-name">Summary Generation</div>
+            <div class="component-detail">Structured clinical summary<br>from full transcript + history +<br>knowledge + protocol state</div>
+            <span class="component-tag tag-batch">Batch</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-multimodal v2-new">
+            <div class="component-name">Behavioral Summary</div>
+            <div class="component-detail">Emotional arc timeline<br>Hesitation patterns mapped<br>Engagement analysis<br>Communication recommendations</div>
+            <span class="component-tag tag-batch">Batch</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-ui">
+            <div class="component-name">Nurse Review Gate</div>
+            <div class="component-detail">Validate clinical summary +<br>behavioral observations.<br>Override emotional analysis<br>if inaccurate.</div>
+            <span class="component-tag tag-manual">Manual</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-output">
+            <div class="component-name">Physician Delivery</div>
+            <div class="component-detail">Clinical summary + behavioral<br>briefing + drill-down access.<br>AI-assisted label on all content.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FEEDBACK LOOP -->
+      <div class="flow-section">
+        <div class="flow-label">⑥ Feedback & Learning Loop — Dual Channel</div>
+        
+        <div class="parallel-container">
+          <div class="parallel-path path-feedback" style="flex: 1;">
+            <span class="parallel-path-label">Doctor Feedback — UI</span>
+            <div class="inner-flow">
+              <div class="inner-component comp-feedback">
+                <div class="inner-component-name">Summary Feedback UI</div>
+                <div class="inner-component-detail">Per-section rating, gap flagging,<br>specialist preference capture</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="parallel-path path-feedback v2-new" style="flex: 1;">
+            <span class="parallel-path-label">Doctor Feedback — Speech Capture</span>
+            <div class="inner-flow">
+              <div class="inner-component comp-feedback">
+                <div class="inner-component-name">Doctor Consultation ASR</div>
+                <div class="inner-component-detail">3-speaker diarization<br>(doctor + patient + nurse)</div>
+              </div>
+              <div class="inner-arrow">↓</div>
+              <div class="inner-component comp-llm">
+                <div class="inner-component-name">Gap Detection LLM</div>
+                <div class="inner-component-detail">Compare doctor questions against<br>prescreening summary. Detect gaps,<br>re-asks, explicit instructions.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="parallel-path" style="flex: 1; border-color: var(--border);">
+            <span class="parallel-path-label" style="color: var(--accent-green); border-color: rgba(16, 185, 129, 0.3);">Nurse Signals</span>
+            <div class="inner-flow">
+              <div class="inner-component comp-feedback">
+                <div class="inner-component-name">Correction Aggregation</div>
+                <div class="inner-component-detail">Dismissed suggestions,<br>overrides, behavioral analysis<br>accuracy feedback</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="merge-indicator">
+          <div class="merge-line"></div>
+          <span class="merge-text">All feedback channels merge</span>
+          <div class="merge-line"></div>
+        </div>
+
+        <div class="flow-row">
+          <div class="component comp-llm">
+            <div class="component-name">Feedback Extraction</div>
+            <div class="component-detail">LLM structures all feedback into<br>typed rules: gaps, phrasing,<br>specialist preferences, urgency<br>patterns, behavioral signal validation</div>
+            <span class="component-tag tag-batch">Batch</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-feedback">
+            <div class="component-name">Clinical Admin Review</div>
+            <div class="component-detail">Approve / reject / modify.<br>Doctor attribution visible.<br>Confidence tier promotion.</div>
+            <span class="component-tag tag-manual">Manual Gate</span>
+          </div>
+          <div class="arrow"><div class="arrow-line"></div></div>
+          <div class="component comp-store">
+            <div class="component-name">Learning Knowledge Base</div>
+            <div class="component-detail">Confidence-tiered rules.<br>Behavioral signal validation data.<br>Per-doctor preferences.<br>Quarterly review + decay.</div>
+            <span class="component-tag tag-persistent">Persistent</span>
+          </div>
+        </div>
+
+        <div class="feedback-loop-indicator">
+          <span class="loop-arrow">↻</span>
+          <span class="feedback-loop-text">Learned rules + doctor preferences + validated behavioral patterns feed back into session initialization</span>
+        </div>
+      </div>
+
+      <!-- DATA STORES -->
+      <div class="flow-section">
+        <div class="flow-label">⑦ Data Stores</div>
+        <div class="stores-row">
+          <div class="store-box">
+            <div class="store-name">Drug Knowledge Base</div>
+            <div class="store-detail">Per-drug chunks + metadata.<br>Hybrid: structured lookup +<br>vector search.</div>
+          </div>
+          <div class="store-box">
+            <div class="store-name">Clinical Guidelines KB</div>
+            <div class="store-detail">Per-scenario chunks tagged by<br>symptoms, conditions, demographics.<br>Semantic + metadata retrieval.</div>
+          </div>
+          <div class="store-box">
+            <div class="store-name">Learning Knowledge Base</div>
+            <div class="store-detail">Protocol rules, phrasing patterns,<br>doctor preferences, urgency<br>patterns, behavioral validations.</div>
+          </div>
+          <div class="store-box">
+            <div class="store-name">Session Store</div>
+            <div class="store-detail">Audio, transcripts, summaries,<br>protocol history, AI logs,<br>behavioral analysis data.</div>
+          </div>
+          <div class="store-box">
+            <div class="store-name">Embedding Store</div>
+            <div class="store-detail">Vector database. All KB<br>collections. Metadata-filtered<br>retrieval.</div>
+          </div>
+          <div class="store-box" style="border-top-color: var(--accent-orange);">
+            <div class="store-name">Behavioral Data Store</div>
+            <div class="store-detail">Emotional analysis per session.<br>Separate retention policy.<br>Access-controlled. Encrypted.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CROSS-CUTTING -->
+      <div class="crosscut">
+        <div class="crosscut-title">Cross-Cutting Concerns</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Encryption at rest + in transit</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Full audit trail (all AI actions)</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Data residency compliance</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Role-based access control</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Graceful degradation</div>
+        <div class="crosscut-item"><span class="crosscut-dot"></span>Patient consent (enhanced for behavioral)</div>
+        <div class="crosscut-item"><span class="crosscut-dot" style="background: var(--accent-orange);"></span>Behavioral data separate retention</div>
+        <div class="crosscut-item"><span class="crosscut-dot" style="background: var(--accent-orange);"></span>Multimodal ethics guardrails</div>
+      </div>
+
+    </div>
+
+    <!-- V2 NOTES -->
+    <div class="notes-section">
+      <div class="note-card">
+        <div class="note-title">
+          <span class="note-icon" style="background: rgba(139, 92, 246, 0.15); color: var(--accent-purple);">△</span>
+          V1 → V2 Changes
+        </div>
+        <div class="note-content">
+          <ul>
+            <li>Completeness monitoring → proactive real-time guidance</li>
+            <li>Added multimodal audio analysis (supplementary layer)</li>
+            <li>Added doctor speech capture for automated feedback</li>
+            <li>Behavioral observations in summary for physician</li>
+            <li>Enhanced consent for voice behavioral analysis</li>
+            <li>Behavioral data store with separate retention</li>
+            <li>Multi-clinic knowledge sharing capability</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note-card">
+        <div class="note-title">
+          <span class="note-icon" style="background: rgba(245, 158, 11, 0.15); color: var(--accent-orange);">🎙</span>
+          Multimodal Layer Design
+        </div>
+        <div class="note-content">
+          <ul>
+            <li>60-90 second batched segments (not real-time)</li>
+            <li>Runs parallel — never blocks primary pipeline</li>
+            <li>Running emotional state carries across segments</li>
+            <li>Observations only, never diagnostic claims</li>
+            <li>Nurse can override any behavioral signal</li>
+            <li>~13-20 API calls per 20-min consultation</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note-card">
+        <div class="note-title">
+          <span class="note-icon" style="background: rgba(236, 72, 153, 0.15); color: var(--accent-pink);">↻</span>
+          Dual Feedback Channels
+        </div>
+        <div class="note-content">
+          <ul>
+            <li>UI feedback: explicit, structured, immediate</li>
+            <li>Speech capture: implicit, richer, requires extraction</li>
+            <li>3-speaker diarization for doctor consultations</li>
+            <li>Gap detection by comparing doctor Qs vs summary</li>
+            <li>Both channels merge into unified learning pipeline</li>
+            <li>Behavioral signal validation from doctor follow-through</li>
+          </ul>
+        </div>
+      </div>
+      <div class="note-card">
+        <div class="note-title">
+          <span class="note-icon" style="background: rgba(239, 68, 68, 0.15); color: var(--accent-red);">⚠</span>
+          Privacy & Ethics (V2 Enhanced)
+        </div>
+        <div class="note-content">
+          <ul>
+            <li>Enhanced consent: disclose behavioral voice analysis</li>
+            <li>Behavioral data has separate, shorter retention</li>
+            <li>System observes, never diagnoses emotional states</li>
+            <li>Nurse override always authoritative over AI analysis</li>
+            <li>No cross-patient behavioral profiling</li>
+            <li>Doctor speech: consent from all parties required</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-title">Component Legend</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-cyan);"></div>Input / Capture</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-blue);"></div>ASR / Speech Processing</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-purple);"></div>LLM Reasoning</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-orange);"></div>RAG / Multimodal</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-green);"></div>Nurse Interface</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-teal);"></div>EHR / Output</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-pink);"></div>Feedback / Learning</div>
+    <div class="legend-item"><div class="legend-color" style="background: var(--accent-red);"></div>Data Stores</div>
+  </div>
+
+</div>
+
+<script>
+  function showVersion(version) {
+    document.querySelectorAll('.arch-container').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.version-tab').forEach(el => el.classList.remove('active'));
+    document.getElementById(version).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
